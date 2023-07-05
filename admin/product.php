@@ -2,6 +2,8 @@
 session_start();
 require_once "../config.php";
 
+$name_err = $description_err = $price_err = "";
+
 // Delete button is clicked
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete_id"])) {
     // Retrieve product ID from the form
@@ -35,31 +37,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
     $description = $_POST["description"];
     $price = $_POST["price"];
 
-    // Add Product or Edit Product
-    if ($action == "create") {
-        // Prepare an insert statement
-        $query = "INSERT INTO products (name, description, price) VALUES (?, ?, ?)";
-        $stmt = mysqli_prepare($con, $query);
-        mysqli_stmt_bind_param($stmt, "ssd", $name, $description, $price);
-    } elseif ($action == "edit") {
-        // Prepare an update statement
-        $query = "UPDATE products SET name = ?, description = ?, price = ? WHERE id = ?";
-        $stmt = mysqli_prepare($con, $query);
-        mysqli_stmt_bind_param($stmt, "ssdi", $name, $description, $price, $id);
-    }
+    if (!empty($name) && !empty($description) && !empty($price)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
+            $name_err = "Name can only contain letters, numbers, and underscores.";
+        } elseif (!preg_match('/^[a-zA-Z0-9\s\/.$*-]+$/', $description)) {
+            $description_err = "Description can only contain letters, numbers, spaces, slashes (/), dashes (-), and dots (.)";
+        } elseif (!preg_match('/^[0-9.]+$/', $price)) {
+            $number_err = "Invalid input. Only numbers and decimals are allowed.";
+        } else {
+            // Add Product or Edit Product
+            if ($action == "create") {
+                // Prepare an insert statement
+                $query = "INSERT INTO products (name, description, price) VALUES (?, ?, ?)";
+                $stmt = mysqli_prepare($con, $query);
+                mysqli_stmt_bind_param($stmt, "ssd", $name, $description, $price);
+            } elseif ($action == "edit") {
+                // Prepare an update statement
+                $query = "UPDATE products SET name = ?, description = ?, price = ? WHERE id = ?";
+                $stmt = mysqli_prepare($con, $query);
+                mysqli_stmt_bind_param($stmt, "ssdi", $name, $description, $price, $id);
+            }
 
-    // Execute the statement
-    if (mysqli_stmt_execute($stmt)) {
-        // Redirect to the current page to refresh the product list
-        header("Location: " . $_SERVER["PHP_SELF"]);
-        exit;
-    } else {
-        // Handle the error if the insertion or update fails
-        echo "Error " . ($action == "create" ? "adding" : "updating") . " the product.";
-    }
+            // Execute the statement
+            if (mysqli_stmt_execute($stmt)) {
+                // Redirect to the current page to refresh the product list
+                header("Location: " . $_SERVER["PHP_SELF"]);
+                exit;
+            } else {
+                // Handle the error if the insertion or update fails
+                echo "Error " . ($action == "create" ? "adding" : "updating") . " the product.";
+            }
 
-    // Close the statement
-    mysqli_stmt_close($stmt);
+            // Close the statement
+            mysqli_stmt_close($stmt);
+        }
+    }
 }
 ?>
 
@@ -84,15 +96,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
                 <div style="border:1px solid #333; background-color:#f1f1f1; border-radius:5px; padding:16px; text-align:center">
                     <div class="form-group">
                         <label class="control-label">Product Name</label>
-                        <input type="text" class="form-control" name="name">
+                        <input type="text" class="form-control" name="name" required>
+                        <span class="invalid-feedback"><?php echo $name_err; ?></span>
                     </div>
                     <div class="form-group">
                         <label class="control-label">Product Description</label>
-                        <textarea cols="30" rows="3" class="form-control" name="description"></textarea>
+                        <textarea cols="30" rows="3" class="form-control" name="description" required></textarea>
+                        <span class="invalid-feedback"><?php echo $description_err; ?></span>
                     </div>
                     <div class="form-group">
                         <label class="control-label">Price</label>
-                        <input type="number" class="form-control text-right" name="price" step="any">
+                        <input type="number" class="form-control text-right" name="price" step="any" required>
+                        <span class="invalid-feedback"><?php echo $price_err; ?></span>
                     </div>
                     <button type="submit">Save</button>
                     <button type="button" onclick="resetForm()">Cancel</button>
