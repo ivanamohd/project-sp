@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+// Check if the user is logged in and role is 0, if not then redirect user to login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION["role"] !== 0) {
+    header("location: index.php");
+    exit;
+}
+
 require_once "config.php";
 if (isset($_POST["add_to_cart"])) {
     if (isset($_SESSION["shopping_cart"])) {
@@ -59,20 +66,18 @@ if (isset($_GET["action"])) {
         if (mysqli_num_rows($result) > 0) {
             while ($row = mysqli_fetch_array($result)) {
         ?>
-        <div class="col-md-4">
-            <form method="post" action="cart.php?action=add&id=<?php echo $row["id"]; ?>">
-                <div style="border:1px solid #333; background-color:#f1f1f1; border-radius:5px; padding:16px;"
-                    align="center">
-                    <h4 class="text-info"><?php echo htmlspecialchars($row["name"]); ?></h4>
-                    <h4 class="text-danger">RM <?php echo htmlspecialchars($row["price"]); ?></h4>
-                    <input type="text" name="quantity" class="form-control" value="1" />
-                    <input type="hidden" name="hidden_name" value="<?php echo htmlspecialchars($row["name"]); ?>" />
-                    <input type="hidden" name="hidden_price" value="<?php echo htmlspecialchars($row["price"]); ?>" />
-                    <input type="submit" name="add_to_cart" style="margin-top:5px;" class="btn btn-success"
-                        value="Add to Cart" />
+                <div class="col-md-4" style="margin-bottom: 30px;">
+                    <form method="post" action="cart.php?action=add&id=<?php echo $row["id"]; ?>">
+                        <div style="border:1px solid #333; background-color:#f1f1f1; border-radius:5px; padding:16px;" align="center">
+                            <h4 class="text-info"><?php echo htmlspecialchars($row["name"]); ?></h4>
+                            <h4 class="text-danger">RM <?php echo htmlspecialchars($row["price"]); ?></h4>
+                            <input type="text" name="quantity" class="form-control" value="1" />
+                            <input type="hidden" name="hidden_name" value="<?php echo htmlspecialchars($row["name"]); ?>" />
+                            <input type="hidden" name="hidden_price" value="<?php echo htmlspecialchars($row["price"]); ?>" />
+                            <input type="submit" name="add_to_cart" style="margin-top:5px;" class="btn btn-success" value="Add to Cart" />
+                        </div>
+                    </form>
                 </div>
-            </form>
-        </div>
         <?php
             }
         }
@@ -94,26 +99,25 @@ if (isset($_GET["action"])) {
                     $total = 0;
                     foreach ($_SESSION["shopping_cart"] as $keys => $values) {
                 ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($values["item_name"]); ?></td>
-                    <td><?php echo htmlspecialchars($values["item_quantity"]); ?></td>
-                    <td>RM <?php echo htmlspecialchars($values["item_price"]); ?></td>
-                    <td>RM
-                        <?php echo htmlspecialchars(number_format($values["item_quantity"] * $values["item_price"], 2)); ?>
-                    </td>
-                    <td><a href="cart.php?action=delete&id=<?php echo $values["item_id"]; ?>"><span
-                                class="text-danger">Remove</span></a></td>
-                </tr>
-                <?php
+                        <tr>
+                            <td><?php echo htmlspecialchars($values["item_name"]); ?></td>
+                            <td><?php echo htmlspecialchars($values["item_quantity"]); ?></td>
+                            <td>RM <?php echo htmlspecialchars($values["item_price"]); ?></td>
+                            <td>RM
+                                <?php echo htmlspecialchars(number_format($values["item_quantity"] * $values["item_price"], 2)); ?>
+                            </td>
+                            <td><a href="cart.php?action=delete&id=<?php echo $values["item_id"]; ?>"><span class="text-danger">Remove</span></a></td>
+                        </tr>
+                    <?php
                         $total = $total + ($values["item_quantity"] * $values["item_price"]);
                         $_SESSION["total"] = $total;
                     }
                     ?>
-                <tr>
-                    <td colspan="3" align="right">Total</td>
-                    <td align="right">RM <?php echo number_format($total, 2); ?></td>
-                    <td></td>
-                </tr>
+                    <tr>
+                        <td colspan="3" align="right">Total</td>
+                        <td align="right">RM <?php echo number_format($total, 2); ?></td>
+                        <td></td>
+                    </tr>
                 <?php
                 }
                 ?>
@@ -121,7 +125,7 @@ if (isset($_GET["action"])) {
 
             <div align="center">
                 <?php if (!empty($_SESSION["shopping_cart"])) { ?>
-                <a href="checkout.php" class="btn btn-success">Proceed to Checkout</a>
+                    <a href="checkout.php" class="btn btn-success">Proceed to Checkout</a>
                 <?php } ?>
             </div>
         </div>

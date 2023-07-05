@@ -2,6 +2,12 @@
 session_start();
 require_once "../config.php";
 
+// Check if the user is logged in and role is 1, if not then redirect user to login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION["role"] !== 1) {
+    header("location: ../index.php");
+    exit;
+}
+
 $name_err = $description_err = $price_err = "";
 
 // Delete button is clicked

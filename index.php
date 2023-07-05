@@ -12,11 +12,17 @@ session_start();
 // Regenerate session ID
 session_regenerate_id();
 
-// Check if the user is already logged in, if yes then redirect him to welcome page
+// Check if the user is already logged in, if yes then redirect user to welcome or dashboard page
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
-    header("location: welcome.php");
-    session_regenerate_id();
-    exit;
+    if ($_SESSION["role"] == 1) {
+        header("location: admin/dashboard.php");
+        session_regenerate_id();
+        exit;
+    } else {
+        header("location: welcome.php");
+        session_regenerate_id();
+        exit;
+    }
 }
 
 // Include config file
@@ -49,7 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate credentials
     if (empty($username_err) && empty($password_err)) {
         // Prepare a select statement
-        $sql = "SELECT id, username, password FROM users WHERE username = ?";
+        $sql = "SELECT id, username, password, role FROM users WHERE username = ?";
 
         if ($stmt = mysqli_prepare($con, $sql)) {
             // Bind variables to the prepared statement as parameters
@@ -66,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Check if username exists, if yes then verify password
                 if (mysqli_stmt_num_rows($stmt) == 1) {
                     // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password);
+                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password, $role);
                     if (mysqli_stmt_fetch($stmt)) {
                         if (password_verify($password, $hashed_password)) {
                             // Password is correct, so start a new session
@@ -77,9 +83,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $_SESSION["id"] = $id;
                             $_SESSION["username"] = $username;
                             $_SESSION["email"] = $email;
+                            $_SESSION["role"] = $role;
 
-                            // Redirect user to welcome page
-                            header("location: welcome.php");
+                            if ($_SESSION["role"] == 1) {
+                                // Redirect user to admin dashboard page
+                                header("location: admin/dashboard.php");
+                            } else {
+                                // Redirect user to welcome page
+                                header("location: welcome.php");
+                            }
                         } else {
                             // Password is incorrect, display a generic error message
                             $login_err = "Invalid username or password.";
@@ -117,14 +129,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
         <label>Username:</label>
-        <input type="text" name="username"
-            class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>"
-            value="<?php echo $username_input; ?>">
+        <input type="text" name="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username_input; ?>">
         <span class="invalid-feedback"><?php echo $username_err; ?></span>
 
         <br><br><label>Password:</label>
-        <input type="password" name="password"
-            class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>">
+        <input type="password" name="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>">
         <span class="invalid-feedback"><?php echo $password_err; ?></span>
 
         <br><br><input type="submit" class="btn btn-primary" value="Login">
