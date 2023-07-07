@@ -45,6 +45,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $new_password_err = "Please enter the new password.";
     } elseif (strlen($con->real_escape_string($_POST["new_password"])) < 8) {
         $new_password_err = "Password must have atleast 8 characters.";
+    } elseif (!preg_match("#[0-9]+#", $con->real_escape_string($_POST["new_password"]))) {
+        $new_password_err = "Password must contain at least 1 number.";
+    } elseif (!preg_match("#[A-Z]+#", $con->real_escape_string($_POST["new_password"]))) {
+        $new_password_err = "Password must contain at least 1 capital letter.";
+    } elseif (!preg_match("#[a-z]+#", $con->real_escape_string($_POST["new_password"]))) {
+        $new_password_err = "Password must contain at least 1 lowercase letter.";
     } else {
         $new_password = $con->real_escape_string($_POST["new_password"]);
     }
@@ -105,19 +111,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <p>Please fill out this form to reset your password.</p>
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
         <label>Current Password</label>
-        <input type="password" name="current_password"
-            class="form-control <?php echo (!empty($current_password_err)) ? 'is-invalid' : ''; ?>"
-            value="<?php echo $current_password; ?>">
+        <input type="password" name="current_password" class="form-control <?php echo (!empty($current_password_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $current_password; ?>">
         <span class="invalid-feedback"><?php echo $current_password_err; ?></span>
         <br><br><label>New Password</label>
-        <input type="password" name="new_password"
-            class="form-control <?php echo (!empty($new_password_err)) ? 'is-invalid' : ''; ?>"
-            value="<?php echo $new_password; ?>">
+        <input type="password" name="new_password" class="form-control <?php echo (!empty($new_password_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $new_password; ?>">
         <span class="invalid-feedback"><?php echo $new_password_err; ?></span>
 
         <br><br><label>Confirm Password</label>
-        <input type="password" name="confirm_password"
-            class="form-control <?php echo (!empty($confirm_password_err)) ? 'is-invalid' : ''; ?>">
+        <input type="password" name="confirm_password" class="form-control <?php echo (!empty($confirm_password_err)) ? 'is-invalid' : ''; ?>">
         <span class="invalid-feedback"><?php echo $confirm_password_err; ?></span>
 
         <br><br><input type="submit" class="btn btn-primary" value="Submit">

@@ -32,29 +32,29 @@ if (!isset($_SESSION['lastaccess'])) {
 $card_number_err = $card_expiry_err = $card_cvv_err = $user_name_err = $user_contact_err = $user_address_err = "";
 
 // Generate or retrieve the key pair
-if (!isset($_SESSION['private_key']) || !isset($_SESSION['public_key'])) {
-    // Generate a new key pair
-    $config = [
-        "digest_alg" => "sha256",
-        "private_key_bits" => 2048,
-        "private_key_type" => OPENSSL_KEYTYPE_RSA,
-    ];
-    $resource = openssl_pkey_new($config);
+// if (!isset($_SESSION['private_key']) || !isset($_SESSION['public_key'])) {
+//     // Generate a new key pair
+//     $config = [
+//         "digest_alg" => "sha256",
+//         "private_key_bits" => 2048,
+//         "private_key_type" => OPENSSL_KEYTYPE_RSA,
+//     ];
+//     $resource = openssl_pkey_new($config);
 
-    // Get private key
-    openssl_pkey_export($resource, $privateKey);
+//     // Get private key
+//     openssl_pkey_export($resource, $privateKey);
 
-    // Get public key
-    $publicKey = openssl_pkey_get_details($resource)['key'];
+//     // Get public key
+//     $publicKey = openssl_pkey_get_details($resource)['key'];
 
-    // Store the keys in the session
-    $_SESSION['private_key'] = $privateKey;
-    $_SESSION['public_key'] = $publicKey;
-} else {
-    // Retrieve the key pair from the session
-    $privateKey = $_SESSION['private_key'];
-    $publicKey = $_SESSION['public_key'];
-}
+//     // Store the keys in the session
+//     $_SESSION['private_key'] = $privateKey;
+//     $_SESSION['public_key'] = $publicKey;
+// } else {
+//     // Retrieve the key pair from the session
+//     $privateKey = $_SESSION['private_key'];
+//     $publicKey = $_SESSION['public_key'];
+// }
 
 // Check if the payment form is submitted
 if (isset($_POST["submit_payment"])) {
@@ -196,9 +196,9 @@ if (isset($_POST["submit_payment"])) {
     <title>Checkout</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
     <script>
-        function goBack() {
-            window.history.back();
-        }
+    function goBack() {
+        window.history.back();
+    }
     </script>
 </head>
 
@@ -221,22 +221,22 @@ if (isset($_POST["submit_payment"])) {
                     $total = 0;
                     foreach ($_SESSION["shopping_cart"] as $keys => $values) {
                 ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($values["item_name"]); ?></td>
-                            <td><?php echo htmlspecialchars($values["item_quantity"]); ?></td>
-                            <td>RM <?php echo htmlspecialchars($values["item_price"]); ?></td>
-                            <td>RM
-                                <?php echo htmlspecialchars(number_format($values["item_quantity"] * $values["item_price"], 2)); ?>
-                            </td>
-                        </tr>
-                    <?php
+                <tr>
+                    <td><?php echo htmlspecialchars($values["item_name"]); ?></td>
+                    <td><?php echo htmlspecialchars($values["item_quantity"]); ?></td>
+                    <td>RM <?php echo htmlspecialchars($values["item_price"]); ?></td>
+                    <td>RM
+                        <?php echo htmlspecialchars(number_format($values["item_quantity"] * $values["item_price"], 2)); ?>
+                    </td>
+                </tr>
+                <?php
                         $total = $total + ($values["item_quantity"] * $values["item_price"]);
                     }
                     ?>
-                    <tr>
-                        <td colspan="3" align="right">Total</td>
-                        <td align="right">RM <?php echo number_format($total, 2); ?></td>
-                    </tr>
+                <tr>
+                    <td colspan="3" align="right">Total</td>
+                    <td align="right">RM <?php echo number_format($total, 2); ?></td>
+                </tr>
                 <?php
                 } else {
                     echo "<tr><td colspan='4'>No items in the cart</td></tr>";
@@ -249,25 +249,37 @@ if (isset($_POST["submit_payment"])) {
         <div align="center">
             <h4>Payment Information</h4>
             <?php if (isset($error_message)) { ?>
-                <p style="color: red;"><?php echo $error_message; ?></p>
+            <p style="color: red;"><?php echo $error_message; ?></p>
             <?php } ?>
             <form method="post" action="checkout.php">
-                <input type="text" name="card_number" placeholder="Card Number" required <?php echo (!empty($card_number_err)) ? 'is-invalid' : ''; ?> value="<?php echo isset($_POST["card_number"]) ? $_POST["card_number"] : ''; ?>">
+                <input type="text" name="card_number" placeholder="Card Number" required
+                    <?php echo (!empty($card_number_err)) ? 'is-invalid' : ''; ?>
+                    value="<?php echo isset($_POST["card_number"]) ? $_POST["card_number"] : ''; ?>">
                 <span class="invalid-feedback"><?php echo $card_number_err; ?></span><br><br>
 
-                <input type="text" name="card_expiry" placeholder="Expiry Date" required <?php echo (!empty($card_expiry_err)) ? 'is-invalid' : ''; ?> value="<?php echo isset($_POST["card_expiry"]) ? $_POST["card_expiry"] : ''; ?>">
+                <input type="text" name="card_expiry" placeholder="Expiry Date" required
+                    <?php echo (!empty($card_expiry_err)) ? 'is-invalid' : ''; ?>
+                    value="<?php echo isset($_POST["card_expiry"]) ? $_POST["card_expiry"] : ''; ?>">
                 <span class="invalid-feedback"><?php echo $card_expiry_err; ?></span><br><br>
 
-                <input type="text" name="card_cvv" placeholder="CVV" required <?php echo (!empty($card_cvv_error)) ? 'is-invalid' : ''; ?> value="<?php echo isset($_POST["card_cvv"]) ? $_POST["card_cvv"] : ''; ?>">
+                <input type="text" name="card_cvv" placeholder="CVV" required
+                    <?php echo (!empty($card_cvv_error)) ? 'is-invalid' : ''; ?>
+                    value="<?php echo isset($_POST["card_cvv"]) ? $_POST["card_cvv"] : ''; ?>">
                 <span class="invalid-feedback"><?php echo $card_cvv_err; ?></span><br><br>
 
-                <input type="text" name="user_name" placeholder="Name" required <?php echo (!empty($user_name_err)) ? 'is-invalid' : ''; ?> value="<?php echo isset($_POST["user_name"]) ? $_POST["user_name"] : ''; ?>">
+                <input type="text" name="user_name" placeholder="Name" required
+                    <?php echo (!empty($user_name_err)) ? 'is-invalid' : ''; ?>
+                    value="<?php echo isset($_POST["user_name"]) ? $_POST["user_name"] : ''; ?>">
                 <span class="invalid-feedback"><?php echo $user_name_err; ?></span><br><br>
 
-                <input type="text" name="user_contact" placeholder="Contact Number" required <?php echo (!empty($user_name_err)) ? 'is-invalid' : ''; ?> value="<?php echo isset($_POST["user_contact"]) ? $_POST["user_contact"] : ''; ?>">
+                <input type="text" name="user_contact" placeholder="Contact Number" required
+                    <?php echo (!empty($user_name_err)) ? 'is-invalid' : ''; ?>
+                    value="<?php echo isset($_POST["user_contact"]) ? $_POST["user_contact"] : ''; ?>">
                 <span class="invalid-feedback"><?php echo $user_contact_err; ?></span><br><br>
 
-                <input type="text" name="user_address" placeholder="Address" required <?php echo (!empty($user_address_err)) ? 'is-invalid' : ''; ?> value="<?php echo isset($_POST["user_address"]) ? $_POST["user_address"] : ''; ?>">
+                <input type="text" name="user_address" placeholder="Address" required
+                    <?php echo (!empty($user_address_err)) ? 'is-invalid' : ''; ?>
+                    value="<?php echo isset($_POST["user_address"]) ? $_POST["user_address"] : ''; ?>">
                 <span class="invalid-feedback"><?php echo $user_address_err; ?></span><br><br>
 
                 <input type="hidden" name="token" value="<?php echo $_SESSION['token']; ?>">

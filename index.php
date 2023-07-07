@@ -92,7 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             // Store the code in the session
                             $_SESSION['verification_code'] = $code;
 
-                            $message = "Your codes is " . $code;
+                            $message = "Your code is " . $code;
                             $subject = "Verification Code";
                             $recipient = $email;
                             send_mail($recipient, $subject, $message);
